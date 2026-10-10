@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroCambio & Pagos - Catálogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl flex items-center justify-center font-bold text-lg shadow-md">
+                        <i class="fa-solid fa-bolt text-yellow-300"></i>
+                    </div>
+                    <div>
+                        <h1 id="nav-brand-name" class="font-bold text-lg leading-tight">ElectroCambio & Pagos</h1>
+                        <p id="nav-brand-slogan" class="text-xs text-indigo-300 hidden sm:block">"Deja tu equipo actual como respaldo y estrena hoy"</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="switchTab('catalog')" id="btn-tab-catalog" class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-store"></i> <span class="hidden md:inline">Ver Catálogo</span>
+                    </button>
+                    <button onclick="switchTab('about')" id="btn-tab-about" class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        <i class="fa-solid fa-circle-info"></i> <span class="hidden md:inline">Sobre Nosotros</span>
+                    </button>
+                    <button onclick="switchTab('whatsapp')" id="btn-tab-whatsapp" class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        <i class="fa-brands fa-whatsapp text-emerald-400"></i> <span class="hidden md:inline">Texto WhatsApp</span>
+                    </button>
+                    <button onclick="tryAccessAdmin()" id="btn-tab-admin" class="px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-900 shadow">
+                        <i class="fa-solid fa-lock"></i> <span>Panel del Dueño</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- VISTA CATÁLOGO -->
+        <section id="view-catalog" class="space-y-6">
+            <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-block px-3 py-1 bg-amber-400 text-slate-900 font-extrabold text-xs rounded-full uppercase tracking-wider mb-3">
+                        ⚡ Financiamiento Flexible
+                    </span>
+                    <h2 id="hero-title" class="text-2xl sm:text-4xl font-extrabold leading-tight mb-2">ElectroCambio & Pagos</h2>
+                    <p id="hero-slogan" class="text-indigo-200 text-base sm:text-lg italic mb-6">"Deja tu equipo actual como respaldo y estrena hoy"</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div class="relative w-full sm:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="catalog-search" oninput="renderCatalog()" placeholder="Buscar producto..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div id="category-pills" class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto hide-scrollbar"></div>
+            </div>
+
+            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </section>
+
+        <!-- VISTA SOBRE NOSOTROS -->
+        <section id="view-about" class="hidden space-y-8 max-w-5xl mx-auto">
+            <div class="bg-slate-900 rounded-3xl p-8 text-white text-center">
+                <h2 class="text-3xl font-black mb-3">Sobre Nosotros</h2>
+                <p class="text-indigo-200">Facilitamos el acceso a la mejor tecnología mediante financiamiento flexible.</p>
+            </div>
+        </section>
+
+        <!-- VISTA WHATSAPP -->
+        <section id="view-whatsapp" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 max-w-3xl mx-auto">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-emerald-500"></i> Texto para WhatsApp
+                </h2>
+                <textarea id="whatsapp-text-output" readonly class="w-full h-80 p-4 font-mono text-sm bg-slate-900 text-emerald-400 rounded-2xl border border-slate-800 resize-none"></textarea>
+            </div>
+        </section>
+
+        <!-- VISTA PANEL DEL DUEÑO (PRIVADO) -->
+        <section id="view-admin" class="hidden space-y-8">
+            <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 p-6 rounded-3xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <span class="bg-slate-900 text-amber-400 text-xs font-black uppercase px-3 py-1 rounded-full">Zona Privada</span>
+                    <h2 class="text-2xl font-black mt-2">⚙️ Panel de Control</h2>
+                </div>
+                <button onclick="openProductModal()" class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-plus text-amber-400"></i> Nuevo Producto
+                </button>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b">
+                    <h3 class="text-lg font-bold text-slate-900">Catálogo de Productos</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-xs font-bold uppercase text-slate-500 border-b">
+                            <tr>
+                                <th class="p-4">Producto</th>
+                                <th class="p-4">Categoría</th>
+                                <th class="p-4">Precio Contado</th>
+                                <th class="p-4">Cuota Semanal</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-products-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL AGREGAR / EDITAR PRODUCTO -->
+    <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden">
+            <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-lg">Producto</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="product-form" onsubmit="handleProductSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-product-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre</label>
+                    <input type="text" id="form-title" required class="w-full px-3 py-2 border rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Categoría</label>
+                        <select id="form-category" required class="w-full px-3 py-2 border rounded-xl text-sm">
+                            <option value="COMBOS 4 EN 1">COMBOS 4 EN 1</option>
+                            <option value="TECNOLOGÍA & GADGETS">TECNOLOGÍA & GADGETS</option>
+                            <option value="HOGAR & BELLEZA">HOGAR & BELLEZA</option>
+                            <option value="VARIOS">VARIOS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subtítulo</label>
+                        <input type="text" id="form-subtitle" class="w-full px-3 py-2 border rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Precio Contado ($)</label>
+                        <input type="text" id="form-price-cash" required class="w-full px-3 py-2 border rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cuota Semanal ($)</label>
+                        <input type="text" id="form-price-weekly" required class="w-full px-3 py-2 border rounded-xl text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Detalles</label>
+                    <textarea id="form-details" rows="2" class="w-full px-3 py-2 border rounded-xl text-sm resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">URL Imagen / Foto</label>
+                    <input type="text" id="form-image-url" placeholder="https://..." class="w-full px-3 py-2 border rounded-xl text-sm">
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-md">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const PIN_ADMIN = "1234";
+        let isAdminLoggedIn = false;
+        let selectedCategory = "TODOS";
+
+        let products = JSON.parse(localStorage.getItem('electro_products')) || [
+            { id: "1", category: "COMBOS 4 EN 1", title: "Combo Kit Kuromi", subtitle: "Modelo GT-66", details: "Audífonos + Smartwatch + Consola + Llavero", priceCash: "120.000", priceWeekly: "15.000", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500" },
+            { id: "2", category: "TECNOLOGÍA & GADGETS", title: "Smartwatch i-535 Mini", subtitle: "38mm", details: "Incluye audífonos inalámbricos y correa rosa", priceCash: "95.000", priceWeekly: "12.000", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" }
+        ];
+
+        function tryAccessAdmin() {
+            if (isAdminLoggedIn) {
+                switchTab('admin');
+                return;
+            }
+            const enteredPin = prompt("🔒 Ingrese la contraseña del dueño para acceder:");
+            if (enteredPin === PIN_ADMIN) {
+                isAdminLoggedIn = true;
+                alert("✅ ¡Bienvenida, Dueña!");
+                switchTab('admin');
+            } else if (enteredPin !== null) {
+                alert("❌ Contraseña incorrecta. Acceso denegado.");
+            }
+        }
+
+        function switchTab(tab) {
+            ['catalog', 'about', 'whatsapp', 'admin'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                if (el) el.classList.add('hidden');
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            if (tab === 'catalog') renderCatalog();
+            if (tab === 'admin') renderAdminTable();
+            if (tab === 'whatsapp') renderWhatsappText();
+        }
+
+        function renderCatalog() {
+            const grid = document.getElementById('catalog-grid');
+            const search = document.getElementById('catalog-search').value.toLowerCase();
+            renderCategories();
+
+            let filtered = products.filter(p => {
+                const matchesSearch = p.title.toLowerCase().includes(search) || p.category.toLowerCase().includes(search);
+                const matchesCategory = selectedCategory === "TODOS" || p.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-200 flex flex-col">
+                    <img src="${p.image || 'https://via.placeholder.com/300'}" class="h-48 w-full object-cover">
+                    <div class="p-5 flex-grow flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full uppercase">${p.category}</span>
+                            <h3 class="font-bold text-slate-900 text-base mt-2">${p.title}</h3>
+                            <p class="text-xs text-slate-500">${p.subtitle || ''}</p>
+                            <p class="text-xs text-slate-600 mt-2 bg-slate-50 p-2 rounded-xl">${p.details || ''}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold">Contado</p>
+                                <p class="font-extrabold text-slate-900 text-sm">$${p.priceCash}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-indigo-600 uppercase font-bold">Semanal</p>
+                                <p class="font-black text-indigo-600 text-base">$${p.priceWeekly}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategories() {
+            const categories = ["TODOS", ...new Set(products.map(p => p.category))];
+            const container = document.getElementById('category-pills');
+            container.innerHTML = categories.map(c => `
+                <button onclick="filterCategory('${c}')" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === c ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ${c}
+                </button>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            selectedCategory = cat;
+            renderCatalog();
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-products-table');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td class="p-4 font-bold text-slate-900">${p.title}</td>
+                    <td class="p-4 text-xs">${p.category}</td>
+                    <td class="p-4 font-bold">$${p.priceCash}</td>
+                    <td class="p-4 font-bold text-indigo-600">$${p.priceWeekly}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="editProduct('${p.id}')" class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteProduct('${p.id}')" class="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderWhatsappText() {
+            let txt = `⚡ *ELECTROCAMBIO & PAGOS* ⚡\n"Deja tu equipo actual como respaldo y estrena hoy"\n\n📲 *CATÁLOGO DE PRODUCTOS:*\n\n`;
+            products.forEach(p => {
+                txt += `🔹 *${p.title}*\n💵 Contado: $${p.priceCash}\n🗓️ Semanal: $${p.priceWeekly}\n\n`;
+            });
+            document.getElementById('whatsapp-text-output').value = txt;
+        }
+
+        function openProductModal() {
+            document.getElementById('product-form').reset();
+            document.getElementById('form-product-id').value = '';
+            document.getElementById('modal-title').innerText = 'Nuevo Producto';
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            document.getElementById('form-product-id').value = p.id;
+            document.getElementById('form-title').value = p.title;
+            document.getElementById('form-category').value = p.category;
+            document.getElementById('form-subtitle').value = p.subtitle || '';
+            document.getElementById('form-price-cash').value = p.priceCash;
+            document.getElementById('form-price-weekly').value = p.priceWeekly;
+            document.getElementById('form-details').value = p.details || '';
+            document.getElementById('form-image-url').value = p.image || '';
+            document.getElementById('modal-title').innerText = 'Editar Producto';
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('¿Seguro que deseas eliminar este producto?')) {
+                products = products.filter(p => p.id !== id);
+                saveData();
+                renderAdminTable();
+            }
+        }
+
+        function handleProductSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('form-product-id').value || Date.now().toString();
+            const newProd = {
+                id: id,
+                title: document.getElementById('form-title').value,
+                category: document.getElementById('form-category').value,
+                subtitle: document.getElementById('form-subtitle').value,
+                priceCash: document.getElementById('form-price-cash').value,
+                priceWeekly: document.getElementById('form-price-weekly').value,
+                details: document.getElementById('form-details').value,
+                image: document.getElementById('form-image-url').value
+            };
+
+            const index = products.findIndex(p => p.id === id);
+            if (index > -1) {
+                products[index] = newProd;
+            } else {
+                products.push(newProd);
+            }
+
+            saveData();
+            closeProductModal();
+            renderAdminTable();
+        }
+
+        function saveData() {
+            localStorage.setItem('electro_products', JSON.stringify(products));
+        }
+
+        renderCatalog();
+    </script>
+</body>
+</html>
